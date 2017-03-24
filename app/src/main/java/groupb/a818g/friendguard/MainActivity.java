@@ -1,35 +1,20 @@
 package groupb.a818g.friendguard;
 
-import android.os.Bundle;
-import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
-import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
-import android.view.View;
-import android.view.Menu;
-import android.view.MenuItem;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.List;
-import java.util.Locale;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
-
-import android.app.Activity;
-import android.content.Context;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
+import android.content.Intent;
 import android.graphics.Color;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
-import android.net.Uri;
 import android.os.Bundle;
-import android.util.Log;
+import android.support.v7.app.AppCompatActivity;
+import android.view.Gravity;
+import android.view.View;
+import android.widget.Button;
+import android.widget.FrameLayout;
+import android.widget.NumberPicker;
 import android.widget.TextView;
-
-import com.google.android.gms.appindexing.Action;
-import com.google.android.gms.appindexing.AppIndex;
-import com.google.android.gms.appindexing.Thing;
-import com.google.android.gms.common.api.GoogleApiClient;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -59,56 +44,136 @@ public class MainActivity extends AppCompatActivity {
     private LocationListener mLocationListener;
 
     private final String TAG = "LocationGetLocationActivity";
-
+    private int AUTO_INTERVAL;
+    private int MANNUAL_INTERVAL;
+    private boolean SAFE = true;
+    private TextView auto_update_inteval;
+    private TextView mannul_checkin_interval;
+    private  TextView invite_friends;
+    private Button start_session;
     private boolean mFirstUpdate = true;
     /**
      * ATTENTION: This was auto-generated to implement the App Indexing API.
      * See https://g.co/AppIndexing/AndroidStudio for more information.
      */
-    private GoogleApiClient client;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         setContentView(R.layout.activity_main);
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
+
+        auto_update_inteval = (TextView) findViewById(R.id.auto_inteval);// on click of button display the dialog
+        mannul_checkin_interval = (TextView) findViewById(R.id.check_in_interval);
+        invite_friends= (TextView) findViewById(R.id.invite_friends);
+        start_session = (Button) findViewById(R.id.start_session);
 
 
+        auto_update_inteval.setOnClickListener(new View.OnClickListener()
+        {
 
-        mAccuracyView = (TextView) findViewById(R.id.accuracy_view);
-        mTimeView = (TextView) findViewById(R.id.time_view);
-        mLatView = (TextView) findViewById(R.id.lat_view);
-        mLngView = (TextView) findViewById(R.id.lng_view);
-
-        mAccuracyView.setText("accuracy we need");
-        mTimeView.setText("time elapsed");
-        mLatView.setText("Lat position");
-        mLngView.setText("Lng position");
-
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
+            public void onClick(View v) {
+                showAuto();
+            }
+        });
+        mannul_checkin_interval.setOnClickListener(new View.OnClickListener(){
+
+            @Override
+            public void onClick(View v) {
+                showMannual();
+            }
+            }
+        );
+
+        start_session.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(MainActivity.this, LocationActivity.class);
+                intent.putExtra("Auto Update Interval", AUTO_INTERVAL);
+                intent.putExtra("Mannual Check-in Interval", MANNUAL_INTERVAL);
+                startActivity(intent);
+
+
             }
         });
 
 
+    }
 
+    public void showAuto() {
+        final NumberPicker picker = new NumberPicker(this);
+        picker.setMinValue(1);
+        picker.setMaxValue(30);
+
+        final FrameLayout layout = new FrameLayout(this);
+        layout.addView(picker, new FrameLayout.LayoutParams(
+                FrameLayout.LayoutParams.WRAP_CONTENT,
+                FrameLayout.LayoutParams.WRAP_CONTENT,
+                Gravity.CENTER));
+
+        new AlertDialog.Builder(this)
+                .setView(layout)
+                .setTitle("Auto Update Interval minutes")
+                .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        AUTO_INTERVAL = picker.getValue();
+                        auto_update_inteval.setText("Auto Updates every " + AUTO_INTERVAL + " Minutes");
+                    }
+                })
+                .setNegativeButton(android.R.string.cancel, null)
+                .show();
+
+
+    }
+
+
+
+
+    public void showMannual() {
+
+        final NumberPicker picker = new NumberPicker(this);
+        picker.setMinValue(10);
+        picker.setMaxValue(60);
+
+        final FrameLayout layout = new FrameLayout(this);
+        layout.addView(picker, new FrameLayout.LayoutParams(
+                FrameLayout.LayoutParams.WRAP_CONTENT,
+                FrameLayout.LayoutParams.WRAP_CONTENT,
+                Gravity.CENTER));
+
+        picker.setOnScrollListener(new NumberPicker.OnScrollListener() {
+            @Override
+            public void onScrollStateChange(NumberPicker view, int scrollState) {
+                view.setValue(scrollState);
+            }
+        });
+        new AlertDialog.Builder(this)
+                .setView(layout)
+                .setTitle("Auto Update Interval minutes")
+                .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        MANNUAL_INTERVAL = picker.getValue();
+                        mannul_checkin_interval.setText("Mannual Check-in every"  + MANNUAL_INTERVAL + " Minutes");
+                    }
+                })
+                .setNegativeButton(android.R.string.cancel, null)
+                .show();
+
+
+    }
+
+       // mAccuracyView.setText("accuracy we need");
+       // mTimeView.setText("time elapsed");
+       // mLatView.setText("Lat position");
+       // mLngView.setText("Lng position");
 
 
 
 }
-
-
-
-
-
-}
-
-
 
 
 
