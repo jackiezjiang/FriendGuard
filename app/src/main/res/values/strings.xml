@@ -19,5 +19,6 @@
     <string name="cancel">Cancel</string>
     <string name="title_activity_maps">Map</string>
     <string name="cannot_find_location">location error</string>
+    <string name="EXIT">EXIT</string>
 
 </resources>

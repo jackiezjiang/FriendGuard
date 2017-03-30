@@ -1,6 +1,7 @@
 package groupb.a818g.friendguard;
 
 import android.app.AlertDialog;
+import android.app.TimePickerDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Color;
@@ -15,8 +16,14 @@ import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.NumberPicker;
 import android.widget.TextView;
+import android.widget.TimePicker;
+
+import java.util.Calendar;
 
 public class MainActivity extends AppCompatActivity {
+
+
+    private Button startTime, endTime;
 
 
     private static final long ONE_MIN = 1000 * 60;
@@ -65,9 +72,11 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         auto_update_inteval = (TextView) findViewById(R.id.auto_inteval);// on click of button display the dialog
-        mannul_checkin_interval = (TextView) findViewById(R.id.check_in_interval);
+
         invite_friends= (TextView) findViewById(R.id.invite_friends);
         start_session = (Button) findViewById(R.id.start_session);
+        startTime = (Button) findViewById(R.id.startTime);
+        endTime = (Button) findViewById(R.id.endTime);
 
 
         auto_update_inteval.setOnClickListener(new View.OnClickListener()
@@ -78,14 +87,27 @@ public class MainActivity extends AppCompatActivity {
                 showAuto();
             }
         });
-        mannul_checkin_interval.setOnClickListener(new View.OnClickListener(){
 
+
+
+        startTime.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                showMannual();
+
+                showStartTimePicker();
+
             }
+        });
+
+        endTime.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                showEndTimePicker();
+
             }
-        );
+        });
+
 
         start_session.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -101,6 +123,43 @@ public class MainActivity extends AppCompatActivity {
 
 
     }
+
+
+    private void showStartTimePicker() {
+        TimePickerDialog timePickerDialog = new TimePickerDialog(MainActivity.this,
+                new TimePickerDialog.OnTimeSetListener() {
+
+
+
+                    @Override
+                    public void onTimeSet(TimePicker view, int hourOfDay,
+                                          int minute) {
+
+                        startTime.setText(hourOfDay + ":" + minute);
+                    }
+                }, Calendar.HOUR_OF_DAY, Calendar.MINUTE, false);
+        timePickerDialog.show();
+
+    }
+
+    private void showEndTimePicker() {
+        TimePickerDialog timePickerDialog = new TimePickerDialog(MainActivity.this,
+                new TimePickerDialog.OnTimeSetListener() {
+
+
+
+                    @Override
+                    public void onTimeSet(TimePicker view, int hourOfDay,
+                                          int minute) {
+
+                        endTime.setText(hourOfDay + ":" + minute);
+                    }
+                }, Calendar.HOUR_OF_DAY, Calendar.MINUTE, false);
+        timePickerDialog.show();
+
+    }
+
+
 
     public void showAuto() {
         final NumberPicker picker = new NumberPicker(this);
@@ -132,39 +191,7 @@ public class MainActivity extends AppCompatActivity {
 
 
 
-    public void showMannual() {
 
-        final NumberPicker picker = new NumberPicker(this);
-        picker.setMinValue(10);
-        picker.setMaxValue(60);
-
-        final FrameLayout layout = new FrameLayout(this);
-        layout.addView(picker, new FrameLayout.LayoutParams(
-                FrameLayout.LayoutParams.WRAP_CONTENT,
-                FrameLayout.LayoutParams.WRAP_CONTENT,
-                Gravity.CENTER));
-
-        picker.setOnScrollListener(new NumberPicker.OnScrollListener() {
-            @Override
-            public void onScrollStateChange(NumberPicker view, int scrollState) {
-                view.setValue(scrollState);
-            }
-        });
-        new AlertDialog.Builder(this)
-                .setView(layout)
-                .setTitle("Auto Update Interval minutes")
-                .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialogInterface, int i) {
-                        MANNUAL_INTERVAL = picker.getValue();
-                        mannul_checkin_interval.setText("Mannual Check-in every"  + MANNUAL_INTERVAL + " Minutes");
-                    }
-                })
-                .setNegativeButton(android.R.string.cancel, null)
-                .show();
-
-
-    }
 
        // mAccuracyView.setText("accuracy we need");
        // mTimeView.setText("time elapsed");
