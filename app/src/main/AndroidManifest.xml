@@ -19,6 +19,21 @@
     <uses-permission android:name="android.permission.READ_PROFILE" />
     <uses-permission android:name="android.permission.READ_CONTACTS" />
 
+    <uses-permission android:name="android.permission.INTERNET"/>
+    <uses-permission android:name="android.permission.GET_ACCOUNTS" />
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+
+    <uses-permission android:name="android.permission.VIBRATE" />
+
+    <uses-permission android:name=".permission.RECEIVE" />
+    <uses-permission android:name="groupb.a818g.friendguard.permission.C2D_MESSAGE" />
+    <permission android:name="groupb.a818g.friendguard.permission.C2D_MESSAGE"
+    android:protectionLevel="signature" />
+
+
+
+
+
     <application
         android:allowBackup="false"
         android:icon="@mipmap/ic_launcher"
@@ -63,6 +78,41 @@
  ATTENTION: This was auto-generated to add Google Play services to your project for
      App Indexing.  See https://g.co/AppIndexing/AndroidStudio for more information.
         -->
+
+
+
+
+
+
+
+        <receiver
+            android:name="com.google.android.gms.gcm.GcmReceiver"
+            android:exported="true"
+            android:permission="com.google.android.c2dm.permission.SEND" >
+            <intent-filter>
+                <action android:name="com.google.android.c2dm.intent.RECEIVE" />
+                <category android:name="com.example.gcm" />
+            </intent-filter>
+        </receiver>
+        <service
+            android:name=".MyGcmListenerService"
+            android:exported="false" >
+            <intent-filter>
+                <action android:name="com.google.android.c2dm.intent.RECEIVE" />
+            </intent-filter>
+        </service>
+        <service
+            android:name=".MyInstanceIDListenerService"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.google.android.gms.iid.InstanceID" />
+            </intent-filter>
+        </service>
+        <service
+            android:name=".RegistrationIntentService"
+            android:exported="false">
+        </service>
+
 
         <meta-data
             android:name="com.google.android.gms.version"

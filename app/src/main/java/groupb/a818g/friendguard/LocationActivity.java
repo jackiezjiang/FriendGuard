@@ -6,6 +6,7 @@ import android.app.TimePickerDialog;
 import android.content.DialogInterface;
 import android.content.pm.PackageManager;
 import android.location.Location;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentActivity;
@@ -32,10 +33,15 @@ import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.jcraft.jsch.ChannelExec;
+import com.jcraft.jsch.JSch;
+import com.jcraft.jsch.Session;
 
+import java.io.ByteArrayOutputStream;
 import java.text.DateFormat;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.Properties;
 
 /**
  * Created by YZ on 3/23/17.
@@ -77,9 +83,73 @@ public class LocationActivity extends FragmentActivity implements
         mLocationRequest.setFastestInterval(FASTEST_INTERVAL);
         mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
 
+
+
+
+
+
+
     }
 
-    @Override
+
+
+    public  class sendDataTask extends AsyncTask<Void, Void, Boolean> {
+        private final String user;
+        private final String password;
+
+
+        sendDataTask(String user, String password) {
+            this.user = user;
+            this.password = password;
+        }
+
+
+
+
+        public    String executeRemoteCommand(String username,String password,String hostname,int port)
+                throws Exception {
+            JSch jsch = new JSch();
+            Session session = jsch.getSession(username, hostname, port);
+            session.setPassword(password);
+
+            session.setConfig("PreferredAuthentications", "password");
+
+            Log.i("loc session", "set");
+
+            // Avoid asking for key confirmation
+            Properties prop = new Properties();
+            prop.put("StrictHostKeyChecking", "no");
+            session.setConfig(prop);
+            Log.i("loc session", "before connect");
+            session.connect();
+
+            Log.i("session", "after connect");
+            // SSH Channel
+
+            return "";
+
+
+        }
+            @Override
+        protected Boolean doInBackground(Void... params) {
+                try {
+                    String s = executeRemoteCommand("xjiang19","Qiuqiu_Superman", "grace.umd.edu",22);
+                    Log.i("ssh", s);
+                } catch (InterruptedException e) {
+                    Log.i("ssh", "interrupted");
+                    return false;
+                } catch (Exception e) {
+                    Log.i("ssh", "execute exception");
+                    e.printStackTrace();
+                }
+
+                return true;
+        }
+    }
+
+
+
+        @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         Log.d(TAG, "onCreate ...............................");
