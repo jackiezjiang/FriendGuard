@@ -1,35 +1,27 @@
 {
   "project_info": {
-    "project_number": "35638407687",
-    "firebase_url": "https://charged-camera-163021.firebaseio.com",
-    "project_id": "charged-camera-163021",
-    "storage_bucket": "charged-camera-163021.appspot.com"
+    "project_number": "182122905720",
+    "firebase_url": "https://friendguard-163102.firebaseio.com",
+    "project_id": "friendguard-163102",
+    "storage_bucket": "friendguard-163102.appspot.com"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:35638407687:android:c8ada31f5639c3c4",
+        "mobilesdk_app_id": "1:182122905720:android:c8ada31f5639c3c4",
         "android_client_info": {
           "package_name": "groupb.a818g.friendguard"
         }
       },
       "oauth_client": [
         {
-          "client_id": "35638407687-j86j436go16aliupp3fpitmjddrajujp.apps.googleusercontent.com",
-          "client_type": 1,
-          "android_info": {
-            "package_name": "groupb.a818g.friendguard",
-            "certificate_hash": "7a01c1018bda9d5a4ac0831f935b102fe86b26a3"
-          }
-        },
-        {
-          "client_id": "35638407687-fkamhgv24l8ohdm3ptck1as37lac6v4u.apps.googleusercontent.com",
+          "client_id": "182122905720-ne2tg4umoo4kg9cank1mlqaphtppg6b1.apps.googleusercontent.com",
           "client_type": 3
         }
       ],
       "api_key": [
         {
-          "current_key": "AIzaSyDkJUj0ndz0lLfXu6Chi7PUNMq9taI7QWs"
+          "current_key": "AIzaSyAnQULHHvlkQSxZY4rq_GAnU59Xhb7ZPnE"
         }
       ],
       "services": {
@@ -37,13 +29,8 @@
           "status": 1
         },
         "appinvite_service": {
-          "status": 2,
-          "other_platform_oauth_client": [
-            {
-              "client_id": "35638407687-fkamhgv24l8ohdm3ptck1as37lac6v4u.apps.googleusercontent.com",
-              "client_type": 3
-            }
-          ]
+          "status": 1,
+          "other_platform_oauth_client": []
         },
         "ads_service": {
           "status": 2

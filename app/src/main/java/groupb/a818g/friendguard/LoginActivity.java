@@ -542,7 +542,7 @@ public class LoginActivity extends AppCompatActivity implements LoaderManager.Lo
             try {
 
 
-
+                Log.e("show contacts", contacts.toString());
                 sc = SSLContext.getInstance("TLS");
                 sc.init(null, trustAllCerts, new java.security.SecureRandom());
 
@@ -553,15 +553,17 @@ public class LoginActivity extends AppCompatActivity implements LoaderManager.Lo
                 jsonObject.put("type", "register");
                 jsonObject.put("username", email);
                 jsonObject.put("password", password);
-                jsonObject.put("display_name", "jackie");
+                jsonObject.put("display_name", email);
                 jsonObject.put("retyped_pass", password);
-                jsonObject.put("gcm_id", token.substring(0,10));
+                jsonObject.put("gcm_id", token);
                 jsonObject.put("contacts",contacts);
 
 
                 BufferedWriter wr = new BufferedWriter(new OutputStreamWriter(sock.getOutputStream()));
                 wr.write(jsonObject.toString());
                 wr.flush();
+
+
                 //BufferedReader rd = new BufferedReader(new InputStreamReader(sock.getInputStream()));
                 //String str = rd.readLine();
                 //System.out.println(str);
