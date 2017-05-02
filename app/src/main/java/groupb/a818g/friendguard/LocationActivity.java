@@ -91,6 +91,7 @@ public class LocationActivity extends FragmentActivity implements
     private Boolean isSafe = true;
     private GoogleMap mMap;
     private UserLocationTask mAuthTask;
+    private UserEndSessionTask mAuthTask_EndSession;
     private Location mLastLocation;
     private Marker mCurrLocationMarker;
 
@@ -186,7 +187,7 @@ public class LocationActivity extends FragmentActivity implements
         exit.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                finish();
+                sessionEnd(session_id, email);
             }
         });
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
@@ -200,6 +201,16 @@ public void onClick(View arg0) {
         updateUI();
         }
         });*/
+
+    }
+
+
+
+    private void sessionEnd(Integer session_id, String email) {
+
+        mAuthTask_EndSession = new UserEndSessionTask(session_id, email);
+        mAuthTask_EndSession.execute((Void) null);
+        finish();
 
     }
 
@@ -435,6 +446,10 @@ public void onClick(View arg0) {
     }
 
 
+
+
+
+
     public class UserLocationTask extends AsyncTask<Void, Void, Boolean> {
 
 
@@ -557,5 +572,119 @@ public void onClick(View arg0) {
 
 
     }
+
+
+
+
+
+
+
+
+    public class UserEndSessionTask extends AsyncTask<Void, Void, Boolean> {
+
+
+        String email;
+        Integer session_id;
+        SSLSocket sock = null;
+        List<String> contacts;
+        SSLContext sc;
+        String server = "friendguarddb.cs.umd.edu";
+        int port = 10023;
+        String command = "";
+        TrustManager[] trustAllCerts = new TrustManager[]{
+                new X509TrustManager() {
+                    public java.security.cert.X509Certificate[] getAcceptedIssuers() {
+                        return new X509Certificate[0];
+                    }
+
+                    public void checkClientTrusted(
+                            java.security.cert.X509Certificate[] certs, String authType) {
+                    }
+
+                    public void checkServerTrusted(
+                            java.security.cert.X509Certificate[] certs, String authType) {
+                    }
+                }
+        };
+
+
+        public UserEndSessionTask(Integer session_id, String email) {
+
+            this.email = email;
+            this.session_id = session_id;
+        }
+
+
+        //TODO: bind service so the socket connection is shared
+
+        @Override
+        protected Boolean doInBackground(Void... params) {
+
+            try {
+
+
+                sc = SSLContext.getInstance("TLS");
+                sc.init(null, trustAllCerts, new java.security.SecureRandom());
+
+                sock = (SSLSocket) sc.getSocketFactory().createSocket(server, port);
+                sock.setUseClientMode(true);
+
+                JSONObject jsonObject = new JSONObject();
+                jsonObject.put("type", "sessionEnd");
+                jsonObject.put("username", email);
+
+                jsonObject.put("session_id", session_id);
+
+
+                Log.e("json", jsonObject.toString());
+                BufferedWriter wr = new BufferedWriter(new OutputStreamWriter(sock.getOutputStream()));
+                wr.write(jsonObject.toString());
+                wr.flush();
+
+
+                //BufferedReader rd = new BufferedReader(new InputStreamReader(sock.getInputStream()));
+                //String str = rd.readLine();
+                //System.out.println(str);
+                //rd.close();
+
+                sock.close();
+                return true;
+
+
+            } catch (KeyManagementException e1) {
+                e1.printStackTrace();
+            } catch (NoSuchAlgorithmException e) {
+                e.printStackTrace();
+
+            } catch (JSONException e1) {
+                e1.printStackTrace();
+            } catch (SocketTimeoutException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+            return true;
+            // TODO: register the new account here.
+
+        }
+
+
+        protected void onPostExecute(final Boolean success) {
+            mAuthTask = null;
+
+
+            Log.e("pstEx", "Before success");
+
+
+        }
+
+        @Override
+        protected void onCancelled() {
+            mAuthTask = null;
+
+        }
+    }
+
 
 }
