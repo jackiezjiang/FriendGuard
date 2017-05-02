@@ -4,6 +4,7 @@ import android.Manifest;
 import android.app.AlertDialog;
 import android.app.TimePickerDialog;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.os.AsyncTask;
@@ -37,11 +38,28 @@ import com.jcraft.jsch.ChannelExec;
 import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.Session;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.BufferedWriter;
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.net.SocketTimeoutException;
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
+import java.security.cert.X509Certificate;
 import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.List;
 import java.util.Properties;
+
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLSocket;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509TrustManager;
 
 /**
  * Created by YZ on 3/23/17.
@@ -58,8 +76,8 @@ public class LocationActivity extends FragmentActivity implements
     private long FASTEST_INTERVAL;
     private static final int MY_PERMISSIONS_REQUEST=1;
     private TextView exit;
-
-
+    private Integer session_id = null;
+    private String email;
     private Button alert;
     private TextView lat;
     private TextView lng;
@@ -72,7 +90,7 @@ public class LocationActivity extends FragmentActivity implements
 
     private Boolean isSafe = true;
     private GoogleMap mMap;
-
+    private UserLocationTask mAuthTask;
     private Location mLastLocation;
     private Marker mCurrLocationMarker;
 
@@ -93,59 +111,6 @@ public class LocationActivity extends FragmentActivity implements
 
 
 
-    public  class sendDataTask extends AsyncTask<Void, Void, Boolean> {
-        private final String user;
-        private final String password;
-
-
-        sendDataTask(String user, String password) {
-            this.user = user;
-            this.password = password;
-        }
-
-
-
-
-        public    String executeRemoteCommand(String username,String password,String hostname,int port)
-                throws Exception {
-            JSch jsch = new JSch();
-            Session session = jsch.getSession(username, hostname, port);
-            session.setPassword(password);
-
-            session.setConfig("PreferredAuthentications", "password");
-
-            Log.i("loc session", "set");
-
-            // Avoid asking for key confirmation
-            Properties prop = new Properties();
-            prop.put("StrictHostKeyChecking", "no");
-            session.setConfig(prop);
-            Log.i("loc session", "before connect");
-            session.connect();
-
-            Log.i("session", "after connect");
-            // SSH Channel
-
-            return "";
-
-
-        }
-            @Override
-        protected Boolean doInBackground(Void... params) {
-                try {
-                    String s = executeRemoteCommand("xjiang19","Qiuqiu_Superman", "grace.umd.edu",22);
-                    Log.i("ssh", s);
-                } catch (InterruptedException e) {
-                    Log.i("ssh", "interrupted");
-                    return false;
-                } catch (Exception e) {
-                    Log.i("ssh", "execute exception");
-                    e.printStackTrace();
-                }
-
-                return true;
-        }
-    }
 
 
 
@@ -160,9 +125,11 @@ public class LocationActivity extends FragmentActivity implements
 
 
         Bundle extras = getIntent().getExtras();
-        INTERVAL = Long.valueOf("" + extras.get("Auto Update Interval")) * 100;
-        FASTEST_INTERVAL = INTERVAL / 2;
+        Log.e("int auto ", Integer.toString(extras.getInt("Auto Update Interval")))   ;
+        INTERVAL = Long.valueOf(extras.getInt("Auto Update Interval")) * 100;
 
+        FASTEST_INTERVAL = INTERVAL / 2;
+        email = extras.getString("email");
 
         createLocationRequest();
         mGoogleApiClient = new GoogleApiClient.Builder(this)
@@ -184,7 +151,24 @@ public class LocationActivity extends FragmentActivity implements
             public void onClick(View v) {
                 safety.setText("DANGER");
                 isSafe = false;
-                mLastUpdateTime = DateFormat.getTimeInstance().format(new Date());
+                mLastUpdateTime = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date());
+
+
+
+
+
+
+                Log.e("alert session","button hit from " + Integer.toString(session_id));
+
+
+                mAuthTask = new UserLocationTask(new Double(mCurrentLocation.getLatitude()).toString(), new Double(mCurrentLocation.getLongitude()).toString(), mLastUpdateTime, email, session_id);
+                mAuthTask.execute((Void) null);
+
+
+
+
+
+
                 updateUI();
             }
         });
@@ -220,7 +204,15 @@ public void onClick(View arg0) {
     }
 
 
+   @Override
+   protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+       setIntent(intent);
 
+       Log.e("onNewIntent", "is called");
+
+
+   }
 
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
@@ -347,7 +339,14 @@ public void onClick(View arg0) {
     public void onLocationChanged(Location location) {
         Log.d(TAG, "Firing onLocationChanged..............................................");
         mCurrentLocation = location;
-        mLastUpdateTime = DateFormat.getTimeInstance().format(new Date());
+        mLastUpdateTime = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date());
+
+
+
+
+
+
+        DateFormat.getTimeInstance().format(new Date());
 
         updateUI();
     }
@@ -366,13 +365,13 @@ public void onClick(View arg0) {
             if (isSafe)
                 safety.setText("safe");
 
+
             LatLng latLng = new LatLng(mCurrentLocation.getLatitude(), mCurrentLocation.getLongitude());
             MarkerOptions markerOptions = new MarkerOptions();
             markerOptions.position(latLng);
             if (isSafe) {
                 markerOptions.title(mLastUpdateTime + " " + "safe");
             } else {
-
                 markerOptions.title(mLastUpdateTime + " " + "DANGER");
             }
             markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_MAGENTA));
@@ -381,6 +380,7 @@ public void onClick(View arg0) {
             //move map camera
             mMap.moveCamera(CameraUpdateFactory.newLatLng(latLng));
             mMap.animateCamera(CameraUpdateFactory.zoomTo(15));
+            Log.e("loc", mCurrentLocation.toString());
 
 
         } else {
@@ -407,6 +407,13 @@ public void onClick(View arg0) {
             startLocationUpdates();
             Log.d(TAG, "Location update resumed .....................");
         }
+
+        Intent intent = getIntent();
+        Bundle extras = intent.getExtras();
+        session_id = extras.getInt("session_id");
+        email = extras.getString("email");
+        Log.e("session in onResume", Integer.toString(session_id));
+
     }
 
     public void confirmSafety() {
@@ -428,6 +435,127 @@ public void onClick(View arg0) {
     }
 
 
+    public class UserLocationTask extends AsyncTask<Void, Void, Boolean> {
 
+
+        String lat;
+        String lng;
+        String time;
+        String email;
+        Integer session_id;
+        SSLSocket sock = null;
+        List<String> contacts;
+        SSLContext sc;
+        String server = "friendguarddb.cs.umd.edu";
+        int port = 10023;
+        String command = "";
+        TrustManager[] trustAllCerts = new TrustManager[]{
+                new X509TrustManager() {
+                    public java.security.cert.X509Certificate[] getAcceptedIssuers() {
+                        return new X509Certificate[0];
+                    }
+
+                    public void checkClientTrusted(
+                            java.security.cert.X509Certificate[] certs, String authType) {
+                    }
+
+                    public void checkServerTrusted(
+                            java.security.cert.X509Certificate[] certs, String authType) {
+                    }
+                }
+        };
+
+
+        public UserLocationTask(String lat, String lng, String time, String email, Integer session_id) {
+            this.lat = lat;
+            this.lng = lng;
+            this.time = time;
+            this.email = email;
+            this.session_id = session_id;
+        }
+
+
+
+
+        //TODO: bind service so the socket connection is shared
+
+        @Override
+        protected Boolean doInBackground(Void... params) {
+
+            try {
+
+
+
+                sc = SSLContext.getInstance("TLS");
+                sc.init(null, trustAllCerts, new java.security.SecureRandom());
+
+                sock = (SSLSocket) sc.getSocketFactory().createSocket(server, port);
+                sock.setUseClientMode(true);
+
+                JSONObject jsonObject = new JSONObject();
+                jsonObject.put("type", "checkin");
+                jsonObject.put("checkin_type", "alert");
+                jsonObject.put("username", email);
+                jsonObject.put("lat", lat);
+                jsonObject.put("lon", lng);
+                jsonObject.put("time", time);
+                jsonObject.put("session_id", session_id);
+
+
+                Log.e("json", jsonObject.toString());
+                BufferedWriter wr = new BufferedWriter(new OutputStreamWriter(sock.getOutputStream()));
+                wr.write(jsonObject.toString());
+                wr.flush();
+
+
+                //BufferedReader rd = new BufferedReader(new InputStreamReader(sock.getInputStream()));
+                //String str = rd.readLine();
+                //System.out.println(str);
+                //rd.close();
+
+                sock.close();
+                return true;
+
+
+            } catch (KeyManagementException e1) {
+                e1.printStackTrace();
+            } catch (NoSuchAlgorithmException e) {
+                e.printStackTrace();
+
+            } catch (JSONException e1) {
+                e1.printStackTrace();
+            } catch (SocketTimeoutException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+            return true;
+            // TODO: register the new account here.
+
+        }
+
+
+
+        protected void onPostExecute(final Boolean success) {
+            mAuthTask = null;
+
+
+            Log.e("pstEx","Before success");
+
+
+
+        }
+
+        @Override
+        protected void onCancelled() {
+            mAuthTask = null;
+
+        }
+
+
+
+
+    }
 
 }

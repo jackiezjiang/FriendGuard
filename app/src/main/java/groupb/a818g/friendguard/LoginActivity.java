@@ -116,6 +116,7 @@ public class LoginActivity extends AppCompatActivity implements LoaderManager.Lo
     private String GCMTOKEN = "";
 
 
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -214,7 +215,8 @@ public class LoginActivity extends AppCompatActivity implements LoaderManager.Lo
             while (phones.moveToNext()) {
                 String name = phones.getString(phones.getColumnIndex(ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME));
                 //String phoneNumber = phones.getString(phones.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER));
-                contacts.add(name);
+
+                     contacts.add(name);
 
                 Log.e("Contact list", " "+contacts);
             }
@@ -228,12 +230,19 @@ public class LoginActivity extends AppCompatActivity implements LoaderManager.Lo
 
 
 
+
+
+
     @Override
     protected void onResume() {
         super.onResume();
 
         registerReceiver();
         Log.e("start", "resume");
+
+
+
+
 
 
     }
@@ -280,6 +289,7 @@ public class LoginActivity extends AppCompatActivity implements LoaderManager.Lo
     @Override
     public void onDestroy() {
         super.onDestroy();
+
 
     }
 
@@ -333,10 +343,11 @@ public class LoginActivity extends AppCompatActivity implements LoaderManager.Lo
             mAuthTask.execute((Void) null);
 
 
+
+
+
         }
     }
-
-
 
 
 
@@ -603,6 +614,9 @@ public class LoginActivity extends AppCompatActivity implements LoaderManager.Lo
             if (success) {
 
                 Intent intent = new Intent(LoginActivity.this, MainActivity.class);
+                intent.putExtra("email",email);
+                intent.putExtra("contacts", contacts.toString());
+
                 startActivity(intent);
 
 
