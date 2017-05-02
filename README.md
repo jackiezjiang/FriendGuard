@@ -1,9 +1,9 @@
 # FriendGuard
 ## User Guide
 ### Register (From User Side)
-#### User Name: email
-#### Password: any string longer than 6
-All the User's friends, who have registered this app, can receive a notification requesting for FriendGuard, once the user is logged in.
+User Name: email
+Password: any string longer than 6
+  All the User's friends, who have registered this app, can receive a notification requesting for FriendGuard, once the user is logged in.
 
 ### Set Up a New Session (From User Side)
 #### select startTime, endTime, activeCheckInInterval
