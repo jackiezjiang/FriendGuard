@@ -79,10 +79,13 @@ public class SocketBindService extends Service {
 
     private void openSocket() {
         try {
+
+            Log.e("open socket","before");
             sc = SSLContext.getInstance("TLS");
             sc.init(null, trustAllCerts, new java.security.SecureRandom());
             sock = (SSLSocket) sc.getSocketFactory().createSocket(server, port);
             sock.setUseClientMode(true);
+            Log.e("open socket","after");
         } catch (NoSuchAlgorithmException e) {
             e.printStackTrace();
         } catch (KeyManagementException e) {
@@ -100,7 +103,6 @@ public class SocketBindService extends Service {
 
     public void sendCommand(String msg) throws IOException {
         BufferedWriter wr = new BufferedWriter(new OutputStreamWriter(sock.getOutputStream()));
-
         wr.write(msg);
         wr.flush();
 

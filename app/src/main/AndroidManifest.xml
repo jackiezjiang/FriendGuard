@@ -53,6 +53,26 @@
 
         </activity>
         <activity
+            android:name=".FriendResponseActivity"
+            android:label="@string/app_name">
+
+        </activity>
+        <activity
+            android:name=".FriendConfirmInvitationActivity"
+            android:label="@string/app_name">
+
+        </activity>
+        UserResponseActivity
+        <activity
+            android:name=".UserResponseActivity"
+            android:label="@string/app_name">
+
+        </activity>
+
+
+
+
+        <activity
             android:name=".MainActivity"
             android:label="@string/app_name"
             android:theme="@style/AppTheme.NoActionBar"
@@ -65,12 +85,22 @@
 
         <activity
             android:name=".LocationActivity"
-            android:label="@string/app_name">
+            android:label="@string/app_name"
+            android:launchMode="singleTop">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
             </intent-filter>
         </activity>
+
+        <activity
+            android:name=".SimpleMapActivity"
+            android:label="@string/app_name"
+            >
+
+        </activity>
+
+
 
 
 
