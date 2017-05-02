@@ -1,5 +1,6 @@
 # FriendGuard
 ## User Guide
+
 ### Register (From User Side)
 Need an Email as UserName, and password to regester and login. All the User's friends, who have registered this app, can receive a notification requesting for FriendGuard, once the user is logged in. 
 
