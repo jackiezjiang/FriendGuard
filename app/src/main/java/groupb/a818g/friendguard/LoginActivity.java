@@ -213,10 +213,19 @@ public class LoginActivity extends AppCompatActivity implements LoaderManager.Lo
             Cursor phones = getContentResolver().query(ContactsContract.CommonDataKinds.Phone.CONTENT_URI, null, null, null, null);
 
             while (phones.moveToNext()) {
+
                 String name = phones.getString(phones.getColumnIndex(ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME));
                 //String phoneNumber = phones.getString(phones.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER));
+                Log.e("Name  ",name);
+                    /*if(name.contains("@")) {
+                        name=name.replace((" com"),".com");
+                        contacts.add(name);
+                    }*/
+                if(name.contains("DEMO")) {
+                    //name=name.replace((" com"),".com");
+                    contacts.add(name);
+                }
 
-                     contacts.add(name);
 
                 Log.e("Contact list", " "+contacts);
             }
@@ -402,7 +411,8 @@ public class LoginActivity extends AppCompatActivity implements LoaderManager.Lo
 
     private boolean isEmailValid(String email) {
         //TODO: Replace this with your own logic
-        return email.contains("@");
+        return true;
+        //return email.contains("@");
     }
 
     private boolean isPasswordValid(String password) {

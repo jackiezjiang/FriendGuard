@@ -102,12 +102,6 @@ public class LocationActivity extends FragmentActivity implements
         mLocationRequest.setFastestInterval(FASTEST_INTERVAL);
         mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
 
-
-
-
-
-
-
     }
 
 
@@ -153,10 +147,6 @@ public class LocationActivity extends FragmentActivity implements
                 safety.setText("DANGER");
                 isSafe = false;
                 mLastUpdateTime = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date());
-
-
-
-
 
 
                 Log.e("alert session","button hit from " + Integer.toString(session_id));

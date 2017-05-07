@@ -41,7 +41,8 @@ public class MyGcmListenerService extends GcmListenerService {
 
             String typeLabel = data.getString("type");
             String message  = null;
-
+        Log.e("GCM","GCM message received");
+            Log.e("GCM", "GCM label"+typeLabel);
             if (typeLabel.equals("newFriend")) {
 
                 message = data.getString("uname") + " request FriendGuard From you";
@@ -172,6 +173,7 @@ public class MyGcmListenerService extends GcmListenerService {
 
 
     private void sendNotification(String message) {
+        Log.e("Notification",message);
         Intent intent = new Intent(this, FriendResponseActivity.class);
         intent.putExtra("message", message);
 
