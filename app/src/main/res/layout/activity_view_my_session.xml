@@ -40,10 +40,10 @@
             android:layout_weight="1"
             android:clickable="true"
             android:id="@+id/MySessionAlert"
-
             >
 
             <ImageView
+                android:id="@+id/MySessionAlertImg"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 app:srcCompat="@drawable/button_alert"
@@ -78,6 +78,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 app:srcCompat="@drawable/button_friends"
+
                 android:layout_weight="1"/>
 
             <TextView

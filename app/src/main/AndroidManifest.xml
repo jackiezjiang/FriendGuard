@@ -39,14 +39,14 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".FriendResponseActivity"
+            android:name=".Messaging.FriendResponseActivity"
             android:label="@string/app_name" />
         <activity
-            android:name=".FriendConfirmInvitationActivity"
+            android:name=".Messaging.FriendConfirmInvitationActivity"
             android:label="@string/app_name" />
         UserResponseActivity
         <activity
-            android:name=".UserResponseActivity"
+            android:name=".Messaging.UserResponseActivity"
             android:label="@string/app_name" />
         <activity
             android:name=".MainActivity"
@@ -88,7 +88,7 @@
         </receiver>
 
         <service
-            android:name=".MyGcmListenerService"
+            android:name=".Messaging.MyGcmListenerService"
             android:exported="false"
             android:theme="@style/Theme.Transparent">
             <intent-filter android:priority="1000">
@@ -114,7 +114,8 @@
             android:value="AIzaSyDM6s2vPAZd23io2DmAxbycxZgan9YI_so" />
 
         <activity android:name=".MainMenuActivity" />
-        <activity android:name=".ViewMySessionActivity"></activity>
+        <activity android:name=".ViewMySessionActivity" />
+        <activity android:name=".ViewAlertActivity"></activity>
     </application>
 
 </manifest>

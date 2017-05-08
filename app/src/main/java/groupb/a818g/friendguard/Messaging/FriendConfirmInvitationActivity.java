@@ -1,4 +1,4 @@
-package groupb.a818g.friendguard;
+package groupb.a818g.friendguard.Messaging;
 
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -24,6 +24,9 @@ import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLSocket;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
+
+import groupb.a818g.friendguard.Global.GlobalRepository;
+import groupb.a818g.friendguard.R;
 
 /**
  * Created by YZ on 5/2/17.
@@ -70,6 +73,7 @@ public class FriendConfirmInvitationActivity extends FragmentActivity {
 
                     mAuthTask = new FriendAcceptTask(email, sessionId);
                     mAuthTask.execute((Void) null);
+                    GlobalRepository.addSession(email,sessionId);
 
 
                 }

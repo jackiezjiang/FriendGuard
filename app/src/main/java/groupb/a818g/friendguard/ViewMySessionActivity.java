@@ -6,17 +6,22 @@ import android.app.TimePickerDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
+import android.graphics.Rect;
 import android.location.Location;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentActivity;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 
 import android.util.Log;
+import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.TimePicker;
@@ -65,6 +70,10 @@ import javax.net.ssl.SSLSocket;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 
+import groupb.a818g.friendguard.Global.GlobalRepository;
+
+import static android.support.v7.appcompat.R.id.image;
+
 
 public class ViewMySessionActivity extends AppCompatActivity implements
         OnMapReadyCallback,
@@ -96,6 +105,9 @@ public class ViewMySessionActivity extends AppCompatActivity implements
     private Location mLastLocation;
     private Marker mCurrLocationMarker;
 
+    private long PassiveCheckinInterval = 1000*60; // 5 seconds by default, can be changed later
+    private Handler mHandler;
+
 
     protected void createLocationRequest() {
         mLocationRequest = new LocationRequest();
@@ -119,8 +131,12 @@ public class ViewMySessionActivity extends AppCompatActivity implements
         Bundle extras = getIntent().getExtras();
         Log.e("int auto ", Integer.toString(extras.getInt("Auto Update Interval")))   ;
         INTERVAL = Long.valueOf(extras.getInt("Auto Update Interval")) * 100;
-
         FASTEST_INTERVAL = INTERVAL / 2;
+
+        PassiveCheckinInterval =  GlobalRepository.AutoCheckinIntervalMins*60*1000;
+        mHandler = new Handler();
+        startRepeatingTask();
+
         email = extras.getString("email");
         createLocationRequest();
         mGoogleApiClient = new GoogleApiClient.Builder(this)
@@ -150,15 +166,41 @@ public class ViewMySessionActivity extends AppCompatActivity implements
 
                 mAuthTask = new UserLocationTask(new Double(mCurrentLocation.getLatitude()).toString(), new Double(mCurrentLocation.getLongitude()).toString(), mLastUpdateTime, email, session_id);
                 mAuthTask.execute((Void) null);
-
-
-
-
-
-
                 updateUI();
             }
         });
+        alert.setOnTouchListener(new View.OnTouchListener()
+        {
+            private Rect rect;
+            @Override
+            public boolean onTouch(View v, MotionEvent event)
+            {
+                ImageView image=null;
+                int count = alert.getChildCount();
+                for (int i = 0; i < count; i++) {
+                    View vv = alert.getChildAt(i);
+                    if (vv instanceof ImageView) {
+                        image=(ImageView) vv;
+                    }
+                }
+                if(image==null) return false;
+                if(event.getAction() == MotionEvent.ACTION_DOWN){
+                    image.setColorFilter(Color.argb(200, 190, 221, 30));
+                    rect = new Rect(v.getLeft(), v.getTop(), v.getRight(), v.getBottom());
+                }
+                if(event.getAction() == MotionEvent.ACTION_UP){
+                    image.setColorFilter(Color.argb(0, 0, 0, 0));
+                }
+                if(event.getAction() == MotionEvent.ACTION_MOVE){
+                    if(!rect.contains(v.getLeft() + (int) event.getX(), v.getTop() + (int) event.getY())){
+                        image.setColorFilter(Color.argb(0, 0, 0, 0));
+                    }
+                }
+                return false;
+            }
+
+        });
+
 
 
         safety.setOnClickListener(new View.OnClickListener() {
@@ -173,6 +215,37 @@ public class ViewMySessionActivity extends AppCompatActivity implements
             public void onClick(View v) {
                 sessionEnd(session_id, email);
             }
+        });
+        exit.setOnTouchListener(new View.OnTouchListener()
+        {
+            private Rect rect;
+            @Override
+            public boolean onTouch(View v, MotionEvent event)
+            {
+                ImageView image=null;
+                int count = alert.getChildCount();
+                for (int i = 0; i < count; i++) {
+                    View vv = alert.getChildAt(i);
+                    if (vv instanceof ImageView) {
+                        image=(ImageView) vv;
+                    }
+                }
+                if(image==null) return false;
+                if(event.getAction() == MotionEvent.ACTION_DOWN){
+                    image.setColorFilter(Color.argb(200, 190, 221, 30));
+                    rect = new Rect(v.getLeft(), v.getTop(), v.getRight(), v.getBottom());
+                }
+                if(event.getAction() == MotionEvent.ACTION_UP){
+                    image.setColorFilter(Color.argb(0, 0, 0, 0));
+                }
+                if(event.getAction() == MotionEvent.ACTION_MOVE){
+                    if(!rect.contains(v.getLeft() + (int) event.getX(), v.getTop() + (int) event.getY())){
+                        image.setColorFilter(Color.argb(0, 0, 0, 0));
+                    }
+                }
+                return false;
+            }
+
         });
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
@@ -245,6 +318,12 @@ public void onClick(View arg0) {
         super.onStart();
         Log.d(TAG, "onStart fired ..............");
         mGoogleApiClient.connect();
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        stopRepeatingTask();
     }
 
     @Override
@@ -335,12 +414,6 @@ public void onClick(View arg0) {
         Log.d(TAG, "Firing onLocationChanged..............................................");
         mCurrentLocation = location;
         mLastUpdateTime = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date());
-
-
-
-
-
-
         DateFormat.getTimeInstance().format(new Date());
 
         updateUI();
@@ -411,6 +484,34 @@ public void onClick(View arg0) {
 
     }
 
+    Runnable mStatusChecker = new Runnable() {
+        @Override
+        public void run() {
+            try {
+                sendPassiveCheckIn(); //this function can change value of mInterval.
+            } finally {
+                // 100% guarantee that this always happens, even if
+                // your update method throws an exception
+                mHandler.postDelayed(mStatusChecker, PassiveCheckinInterval);
+            }
+        }
+    };
+
+    void startRepeatingTask() {
+        mStatusChecker.run();
+    }
+
+    void stopRepeatingTask() {
+        mHandler.removeCallbacks(mStatusChecker);
+
+    }
+    void sendPassiveCheckIn() {
+        if(session_id==null || session_id<=0 ||  mCurrentLocation==null) return ;
+        mLastUpdateTime = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date());
+        Log.e("alert session","button hit from " + Integer.toString(session_id));
+        mAuthTask = new UserLocationTask(new Double(mCurrentLocation.getLatitude()).toString(), new Double(mCurrentLocation.getLongitude()).toString(), mLastUpdateTime, email, session_id,"passive");
+        mAuthTask.execute((Void) null);
+    }
     public void confirmSafety() {
 
 
@@ -427,6 +528,7 @@ public void onClick(View arg0) {
                 .show();
 
 
+
     }
 
 
@@ -436,7 +538,7 @@ public void onClick(View arg0) {
 
     public class UserLocationTask extends AsyncTask<Void, Void, Boolean> {
 
-
+        String checkinType;
         String lat;
         String lng;
         String time;
@@ -471,6 +573,15 @@ public void onClick(View arg0) {
             this.time = time;
             this.email = email;
             this.session_id = session_id;
+            this.checkinType = "alert";
+        }
+        public UserLocationTask(String lat, String lng, String time, String email, Integer session_id,String checkinType_) {
+            this.lat = lat;
+            this.lng = lng;
+            this.time = time;
+            this.email = email;
+            this.session_id = session_id;
+            this.checkinType=checkinType_;
         }
 
 
@@ -493,7 +604,7 @@ public void onClick(View arg0) {
 
                 JSONObject jsonObject = new JSONObject();
                 jsonObject.put("type", "checkin");
-                jsonObject.put("checkin_type", "alert");
+                jsonObject.put("checkin_type", checkinType);
                 jsonObject.put("username", email);
                 jsonObject.put("lat", lat);
                 jsonObject.put("lon", lng);

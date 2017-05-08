@@ -1,8 +1,6 @@
-package groupb.a818g.friendguard;
+package groupb.a818g.friendguard.Messaging;
 
-import android.app.Activity;
 import android.content.Intent;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
 import android.util.Log;
@@ -10,48 +8,34 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import java.io.BufferedWriter;
-import java.io.IOException;
-import java.io.OutputStreamWriter;
-import java.net.SocketTimeoutException;
-import java.security.KeyManagementException;
-import java.security.NoSuchAlgorithmException;
-import java.security.cert.X509Certificate;
-import java.util.List;
-
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.SSLSocket;
-import javax.net.ssl.TrustManager;
-import javax.net.ssl.X509TrustManager;
+import groupb.a818g.friendguard.Global.GlobalRepository;
+import groupb.a818g.friendguard.R;
+import groupb.a818g.friendguard.ViewMySessionActivity;
 
 /**
- * Created by YZ on 5/1/17.
+ * Created by YZ on 5/2/17.
  */
 
-public class FriendResponseActivity extends FragmentActivity {
+public class UserResponseActivity extends FragmentActivity {
+
+
 
     private String message;
-    private String email;
     private TextView confirmationText;
     private Button confirmInvitation;
     private Button cancelInvitation;
     private Integer sessionId = null;
-
-
-
+    private String email;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.friend_confirmation);
 
         message = getIntent().getStringExtra("message");
-        email = getIntent().getStringExtra("username");
 
-        Log.e("message", message);
 
+        sessionId = (Integer) getIntent().getExtras().get("session_id");
+        email = getIntent().getStringExtra("email");
 
         confirmationText = (TextView) findViewById(R.id.notification_text);
         confirmInvitation = (Button) findViewById(R.id.confirm);
@@ -62,8 +46,15 @@ public class FriendResponseActivity extends FragmentActivity {
         confirmInvitation.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                finish();
+                Intent intent = new Intent(UserResponseActivity.this, ViewMySessionActivity.class);
+                intent.putExtra("session_id", sessionId);
+                intent.putExtra("email", email);
+                Log.e("sessionid from user res", Integer.toString(sessionId));
+                intent.addFlags(intent.FLAG_ACTIVITY_SINGLE_TOP);
 
+                GlobalRepository.SessionID = sessionId;
+                GlobalRepository.FriendsinmySession.add(email);
+                startActivity(intent);
 
             }
         });
@@ -78,10 +69,6 @@ public class FriendResponseActivity extends FragmentActivity {
 
 
     }
-
-
-
-
 
 
 
