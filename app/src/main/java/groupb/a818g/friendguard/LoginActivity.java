@@ -38,6 +38,7 @@ import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
@@ -69,6 +70,8 @@ import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLSocket;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
+
+import groupb.a818g.friendguard.Global.GlobalRepository;
 
 import static android.Manifest.permission.READ_CONTACTS;
 import static android.Manifest.permission.INTERNET;
@@ -135,7 +138,8 @@ public class LoginActivity extends AppCompatActivity implements LoaderManager.Lo
                 LoginActivity.this.GCMTOKEN = intent.getStringExtra("TOKEN");
 
                 if (sentToken) {
-                    mInformationTextView.setText(GCMTOKEN);
+                    //mInformationTextView.setText(GCMTOKEN);
+                    ((ImageView) findViewById(R.id.FGlogo)).setVisibility(View.VISIBLE);
                 } else {
                     mInformationTextView.setText(getString(R.string.token_error_message));
                 }
@@ -579,6 +583,15 @@ public class LoginActivity extends AppCompatActivity implements LoaderManager.Lo
                 jsonObject.put("gcm_id", token);
                 jsonObject.put("contacts",contacts);
 
+                //set Global Repo
+                GlobalRepository.GCMtoken=token;
+                GlobalRepository.password=password;
+                GlobalRepository.ServerHost=server;
+                GlobalRepository.ServerPort=port;
+                GlobalRepository.SessionID=-1;
+                GlobalRepository.username=email;
+                GlobalRepository.UserFriendsContacts = contacts;
+
 
                 BufferedWriter wr = new BufferedWriter(new OutputStreamWriter(sock.getOutputStream()));
                 wr.write(jsonObject.toString());
@@ -623,10 +636,13 @@ public class LoginActivity extends AppCompatActivity implements LoaderManager.Lo
 
             if (success) {
 
+                /*
                 Intent intent = new Intent(LoginActivity.this, MainActivity.class);
                 intent.putExtra("email",email);
+                intent.putExtra("contacts", contacts.toString());*/
+                Intent intent = new Intent(LoginActivity.this, MainMenuActivity.class);
+                intent.putExtra("email",email);
                 intent.putExtra("contacts", contacts.toString());
-
                 startActivity(intent);
 
 
