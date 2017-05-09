@@ -6,29 +6,32 @@
         android:layout_height="match_parent"
         tools:context=".MainActivity" >
 
-
         <LinearLayout
             android:id="@+id/LL1"
             android:layout_height="wrap_content"
             android:layout_width="fill_parent"
             android:gravity="center_horizontal"
-            android:layout_centerVertical="true"
-            android:orientation="horizontal"
-            >
-                <Button
-                    android:layout_weight="0.9"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Start Time"
-                    android:id="@+id/startTime"
-                    />
+            android:orientation="vertical"
+            android:layout_alignParentTop="true"
+            android:layout_alignParentStart="true">
+
 
                 <Button
-                    android:layout_weight="0.9"
-                    android:layout_width="wrap_content"
+                    android:id="@+id/startTime"
+                    android:layout_width="120dp"
                     android:layout_height="wrap_content"
+                    android:background="#FFFFFF"
+                    android:layout_weight="0.9"
+                    android:text="Start Time" />
+
+                <Button
+                    android:id="@+id/endTime"
+                    android:layout_width="120dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="0.9"
+                    android:background="#FFFFFF"
                     android:text="End Time"
-                    android:id="@+id/endTime"/>
+                    android:layout_margin="10dp"/>
         </LinearLayout>
 
 
@@ -72,14 +75,14 @@
         </LinearLayout>
 
 
-
         <Button
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
             android:id="@+id/start_session"
+            android:layout_width="180dp"
+            android:layout_height="wrap_content"
             android:layout_below="@+id/LL2"
             android:layout_centerHorizontal="true"
-            android:text="Start Session"/>
+            android:background="#FFFFFF"
+            android:text="Start Session" />
 
 
 

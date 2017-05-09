@@ -1,23 +1,21 @@
-package groupb.a818g.friendguard;
+package groupb.a818g.friendguard.Messaging;
 
-import android.app.AlertDialog;
-import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.Looper;
 import android.support.v4.app.NotificationCompat;
-import android.support.v7.view.ContextThemeWrapper;
 import android.util.Log;
-import android.view.WindowManager;
-import android.widget.Toast;
 
 import com.google.android.gms.gcm.GcmListenerService;
+
+import groupb.a818g.friendguard.Global.GlobalRepository;
+import groupb.a818g.friendguard.R;
+import groupb.a818g.friendguard.SimpleMapActivity;
+import groupb.a818g.friendguard.ViewAlertActivity;
 
 /**
  * Created by YZ on 4/9/17.
@@ -41,22 +39,23 @@ public class MyGcmListenerService extends GcmListenerService {
 
             String typeLabel = data.getString("type");
             String message  = null;
-
+        Log.e("GCM","GCM message received");
+            Log.e("GCM", "GCM label"+typeLabel);
             if (typeLabel.equals("newFriend")) {
 
                 message = data.getString("uname") + " request FriendGuard From you";
                 sendNotification(message);
 
 
-            } else if (typeLabel.equals("checkin")) {
+            } else if (typeLabel.equals("passive")) {
                 String uname = data.getString("username");
                 String lat = data.getString("lat");
                 String lng = data.getString("lon");
                 String time = data.getString("time");
 
-
-
-                sendNotificationAndStartMap(uname, lat, lng, time);
+                GlobalRepository.updateCheckIn(lat,lng,uname,time);
+                Log.e("GCM","Passive CheckIn Received from "+uname);
+            //    sendNotificationAndStartMap(uname, lat, lng, time);
 
             } else if (typeLabel.equals("newSession")) {
                 Log.e("label", typeLabel);
@@ -69,7 +68,6 @@ public class MyGcmListenerService extends GcmListenerService {
                 String start = data.getString("start");
                 String end = data.getString("end");
                 String msg = data.getString("message");
-
                 String toDisplayMsg = email + ": " + "From " + start + " To " + end + " At intervel: " + a_checkin_interval.toString();
 
                 Log.e("display", toDisplayMsg);
@@ -148,7 +146,7 @@ public class MyGcmListenerService extends GcmListenerService {
 
         NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(this)
                 .setSmallIcon(R.drawable.circle)
-                .setContentTitle("GCM Message")
+                .setContentTitle("FriendGuard")
                 .setContentText("Your friend accept the invitation")
                 .setAutoCancel(true)
                 .setSound(defaultSoundUri)
@@ -172,6 +170,7 @@ public class MyGcmListenerService extends GcmListenerService {
 
 
     private void sendNotification(String message) {
+        Log.e("Notification",message);
         Intent intent = new Intent(this, FriendResponseActivity.class);
         intent.putExtra("message", message);
 
@@ -187,7 +186,7 @@ public class MyGcmListenerService extends GcmListenerService {
 
         NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(this)
                 .setSmallIcon(R.drawable.circle)
-                .setContentTitle("GCM Message")
+                .setContentTitle("FriendGuard")
                 .setContentText(message)
                 .setAutoCancel(true)
                 .setSound(defaultSoundUri)
@@ -227,7 +226,7 @@ public class MyGcmListenerService extends GcmListenerService {
 
         NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(this)
                 .setSmallIcon(R.drawable.circle)
-                .setContentTitle("GCM Message")
+                .setContentTitle("FriendGuard")
                 .setContentText("New Session")
                 .setAutoCancel(true)
                 .setSound(defaultSoundUri)
@@ -252,17 +251,16 @@ public class MyGcmListenerService extends GcmListenerService {
     private void sendNotificationAndStartMap(String lat, String lng, String username, String time) {
 
 
-        Intent intent = new Intent(this, SimpleMapActivity.class);
-
+       // Intent intent = new Intent(this, SimpleMapActivity.class);
+        Intent intent = new Intent(this, ViewAlertActivity.class);
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         intent.putExtra("lat", lat);
         intent.putExtra("lng", lng);
         intent.putExtra("time", time);
         intent.putExtra("user", username);
-        String message = "Your Friend " + username + " sent Safety Alert at: "+ time + "from lat :" + lat +
-                "lng: " + lng + " .";
+        String message = "Your Friend " + username + " sent Safety Alert";
         //intent.putExtra("message", message);
-
+        intent.putExtra("title","ALERT");
 
 
         Log.e("intent", "intent");
@@ -277,7 +275,7 @@ public class MyGcmListenerService extends GcmListenerService {
 
         NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(this)
                 .setSmallIcon(R.drawable.circle)
-                .setContentTitle("GCM Message")
+                .setContentTitle("FriendGuard")
                 .setContentText(message)
                 .setAutoCancel(true)
                 .setSound(defaultSoundUri)

@@ -38,6 +38,7 @@ import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
@@ -69,6 +70,8 @@ import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLSocket;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
+
+import groupb.a818g.friendguard.Global.GlobalRepository;
 
 import static android.Manifest.permission.READ_CONTACTS;
 import static android.Manifest.permission.INTERNET;
@@ -121,7 +124,7 @@ public class LoginActivity extends AppCompatActivity implements LoaderManager.Lo
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
-
+        GlobalRepository.init();
         mRegistrationProgressBar = (ProgressBar) findViewById(R.id.registrationProgressBar);
         mRegistrationBroadcastReceiver = new BroadcastReceiver() {
             @Override
@@ -135,7 +138,8 @@ public class LoginActivity extends AppCompatActivity implements LoaderManager.Lo
                 LoginActivity.this.GCMTOKEN = intent.getStringExtra("TOKEN");
 
                 if (sentToken) {
-                    mInformationTextView.setText(GCMTOKEN);
+                    //mInformationTextView.setText(GCMTOKEN);
+                    ((ImageView) findViewById(R.id.FGlogo)).setVisibility(View.VISIBLE);
                 } else {
                     mInformationTextView.setText(getString(R.string.token_error_message));
                 }
@@ -213,10 +217,19 @@ public class LoginActivity extends AppCompatActivity implements LoaderManager.Lo
             Cursor phones = getContentResolver().query(ContactsContract.CommonDataKinds.Phone.CONTENT_URI, null, null, null, null);
 
             while (phones.moveToNext()) {
+
                 String name = phones.getString(phones.getColumnIndex(ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME));
                 //String phoneNumber = phones.getString(phones.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER));
+                Log.e("Name  ",name);
+                    /*if(name.contains("@")) {
+                        name=name.replace((" com"),".com");
+                        contacts.add(name);
+                    }*/
+                if(name.contains("DEMO")) {
+                    //name=name.replace((" com"),".com");
+                    contacts.add(name);
+                }
 
-                     contacts.add(name);
 
                 Log.e("Contact list", " "+contacts);
             }
@@ -403,6 +416,7 @@ public class LoginActivity extends AppCompatActivity implements LoaderManager.Lo
     private boolean isEmailValid(String email) {
         //TODO: Replace this with your own logic
         return true;
+
     }
 
     private boolean isPasswordValid(String password) {
@@ -569,6 +583,15 @@ public class LoginActivity extends AppCompatActivity implements LoaderManager.Lo
                 jsonObject.put("gcm_id", token);
                 jsonObject.put("contacts",contacts);
 
+                //set Global Repo
+                GlobalRepository.GCMtoken=token;
+                GlobalRepository.password=password;
+                GlobalRepository.ServerHost=server;
+                GlobalRepository.ServerPort=port;
+                GlobalRepository.SessionID=-1;
+                GlobalRepository.username=email;
+                GlobalRepository.UserFriendsContacts = contacts;
+
 
                 BufferedWriter wr = new BufferedWriter(new OutputStreamWriter(sock.getOutputStream()));
                 wr.write(jsonObject.toString());
@@ -613,10 +636,13 @@ public class LoginActivity extends AppCompatActivity implements LoaderManager.Lo
 
             if (success) {
 
+                /*
                 Intent intent = new Intent(LoginActivity.this, MainActivity.class);
                 intent.putExtra("email",email);
+                intent.putExtra("contacts", contacts.toString());*/
+                Intent intent = new Intent(LoginActivity.this, MainMenuActivity.class);
+                intent.putExtra("email",email);
                 intent.putExtra("contacts", contacts.toString());
-
                 startActivity(intent);
 
 

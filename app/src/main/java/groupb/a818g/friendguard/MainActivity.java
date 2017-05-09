@@ -44,6 +44,8 @@ import javax.net.ssl.SSLSocket;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 
+import groupb.a818g.friendguard.Global.GlobalRepository;
+
 public class MainActivity extends AppCompatActivity {
 
 
@@ -100,7 +102,8 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        setContentView(R.layout.activity_main);
+        //setContentView(R.layout.activity_main);
+        setContentView(R.layout.activity_create_session);
 
         auto_update_inteval = (TextView) findViewById(R.id.auto_inteval);// on click of button display the dialog
 
@@ -305,6 +308,11 @@ public class MainActivity extends AppCompatActivity {
                 jsonObject.put("message", "please confirm the invitation");
                 jsonObject.put("friends", contacts);
 
+                GlobalRepository.AutoCheckinIntervalMins = interval;
+                GlobalRepository.startTime=startTime;
+                GlobalRepository.endTime=endTime;
+
+
 
 
 
@@ -344,7 +352,8 @@ public class MainActivity extends AppCompatActivity {
 
         protected void onPostExecute(final Boolean success) {
             mAuthTask = null;
-            Intent intent = new Intent(MainActivity.this, LocationActivity.class);
+            //Intent intent = new Intent(MainActivity.this, LocationActivity.class);
+            Intent intent = new Intent(MainActivity.this, ViewMySessionActivity.class);
             intent.putExtra("Auto Update Interval", AUTO_INTERVAL);
             intent.putExtra("Mannual Check-in Interval", MANNUAL_INTERVAL);
             intent.putExtra("email", email);
