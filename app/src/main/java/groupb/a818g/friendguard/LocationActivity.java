@@ -248,6 +248,11 @@ public void onClick(View arg0) {
         markerOptions.position(latLng);
         markerOptions.title("Current Position");
         markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE));
+
+        if (mCurrLocationMarker != null) {
+            mCurrLocationMarker.remove();
+
+        }
         mCurrLocationMarker = mMap.addMarker(markerOptions);
 
         mMap.setMyLocationEnabled(true);
@@ -386,6 +391,10 @@ public void onClick(View arg0) {
                 markerOptions.title(mLastUpdateTime + " " + "DANGER");
             }
             markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_MAGENTA));
+            if (mCurrLocationMarker != null) {
+                mCurrLocationMarker.remove();
+
+            }
             mCurrLocationMarker = mMap.addMarker(markerOptions);
 
             //move map camera
