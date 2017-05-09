@@ -416,7 +416,7 @@ public class LoginActivity extends AppCompatActivity implements LoaderManager.Lo
     private boolean isEmailValid(String email) {
         //TODO: Replace this with your own logic
         return true;
-        //return email.contains("@");
+
     }
 
     private boolean isPasswordValid(String password) {
