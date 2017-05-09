@@ -2,7 +2,6 @@ package groupb.a818g.friendguard;
 
 import android.Manifest;
 import android.app.AlertDialog;
-import android.app.TimePickerDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -13,18 +12,15 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.v4.app.ActivityCompat;
-import android.support.v4.app.FragmentActivity;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
 
+import android.support.v7.widget.AlertDialogLayout;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
-import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
-import android.widget.TimePicker;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesUtil;
@@ -38,20 +34,15 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
-import com.google.android.gms.maps.UiSettings;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
-import com.jcraft.jsch.ChannelExec;
-import com.jcraft.jsch.JSch;
-import com.jcraft.jsch.Session;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.BufferedWriter;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.net.SocketTimeoutException;
@@ -60,10 +51,8 @@ import java.security.NoSuchAlgorithmException;
 import java.security.cert.X509Certificate;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
-import java.util.Properties;
 
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLSocket;
@@ -71,8 +60,6 @@ import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 
 import groupb.a818g.friendguard.Global.GlobalRepository;
-
-import static android.support.v7.appcompat.R.id.image;
 
 
 public class ViewMySessionActivity extends AppCompatActivity implements
@@ -105,8 +92,10 @@ public class ViewMySessionActivity extends AppCompatActivity implements
     private Location mLastLocation;
     private Marker mCurrLocationMarker;
 
-    private long PassiveCheckinInterval = 1000*60; // 5 seconds by default, can be changed later
+    private long PassiveCheckinInterval = 1000*60;
+    private long ActiveCheckinInterval = 1000*60; //2 min
     private Handler mHandler;
+    private Handler mHandler2;
 
 
     protected void createLocationRequest() {
@@ -126,16 +115,13 @@ public class ViewMySessionActivity extends AppCompatActivity implements
         if (!isGooglePlayServicesAvailable()) {
             finish();
         }
-
+        initCheckIns();
 
         Bundle extras = getIntent().getExtras();
         Log.e("int auto ", Integer.toString(extras.getInt("Auto Update Interval")))   ;
         INTERVAL = Long.valueOf(extras.getInt("Auto Update Interval")) * 100;
         FASTEST_INTERVAL = INTERVAL / 2;
 
-        PassiveCheckinInterval =  GlobalRepository.AutoCheckinIntervalMins*60*1000;
-        mHandler = new Handler();
-        startRepeatingTask();
 
         email = extras.getString("email");
         createLocationRequest();
@@ -270,8 +256,54 @@ public void onClick(View arg0) {
         finish();
 
     }
+    private void initCheckIns() {
+        PassiveCheckinInterval =  GlobalRepository.AutoCheckinIntervalMins*60*1000;
+        mHandler = new Handler();
+        mHandler2 = new Handler();
+        startRepeatingTask();
+
+    }
+    private void ActiveCheckInDialog() {
+        // 1. Instantiate an AlertDialog.Builder with its constructor
+        //AlertDialog.Builder builder = new AlertDialog.Builder(ViewMySessionActivity.this);
+        AlertDialog.Builder builder = new AlertDialog.Builder(ViewMySessionActivity.this,  android.R.style.Theme_Material_Dialog_Alert);
+
+        // 2. Chain together various setter methods to set the dialog characteristics
+        builder.setMessage("Is everything OK?")
+                .setTitle("Active Check-In");
+
+        // 3. Get the AlertDialog from create()
 
 
+        builder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int id) {
+                // User clicked OK button
+            }
+        });
+        builder.setNegativeButton("No", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int id) {
+                // User cancelled the dialog
+                SendAlerts();
+            }
+        });
+        builder.show();
+        //AlertDialog dialog = builder.create();
+
+    }
+
+    private void SendAlerts(){
+        safety.setText("DANGER");
+        isSafe = false;
+        mLastUpdateTime = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date());
+
+
+        Log.e("alert session","button hit from " + Integer.toString(session_id));
+
+
+        mAuthTask = new UserLocationTask(new Double(mCurrentLocation.getLatitude()).toString(), new Double(mCurrentLocation.getLongitude()).toString(), mLastUpdateTime, email, session_id);
+        mAuthTask.execute((Void) null);
+        updateUI();
+    }
     @Override
     protected void onNewIntent(Intent intent) {
         super.onNewIntent(intent);
@@ -443,6 +475,11 @@ public void onClick(View arg0) {
                 markerOptions.title(mLastUpdateTime + " " + "DANGER");
             }
             markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_MAGENTA));
+
+            if (mCurrLocationMarker != null) {
+                mCurrLocationMarker.remove();
+
+            }
             mCurrLocationMarker = mMap.addMarker(markerOptions);
 
             //move map camera
@@ -484,7 +521,7 @@ public void onClick(View arg0) {
 
     }
 
-    Runnable mStatusChecker = new Runnable() {
+    Runnable PassiveCheckInRun = new Runnable() {
         @Override
         public void run() {
             try {
@@ -492,17 +529,31 @@ public void onClick(View arg0) {
             } finally {
                 // 100% guarantee that this always happens, even if
                 // your update method throws an exception
-                mHandler.postDelayed(mStatusChecker, PassiveCheckinInterval);
+                mHandler.postDelayed(PassiveCheckInRun, PassiveCheckinInterval);
             }
         }
     };
-
+    Runnable ActiveCheckInRun = new Runnable() {
+        @Override
+        public void run() {
+            try {
+                Log.e("MySessionView","ActiveCheckIn Fired");
+                ActiveCheckInDialog(); //this function can change value of mInterval.
+            } finally {
+                // 100% guarantee that this always happens, even if
+                // your update method throws an exception
+                mHandler2.postDelayed(ActiveCheckInRun, ActiveCheckinInterval);
+            }
+        }
+    };
     void startRepeatingTask() {
-        mStatusChecker.run();
+        PassiveCheckInRun.run();
+        ActiveCheckInRun.run();
     }
 
     void stopRepeatingTask() {
-        mHandler.removeCallbacks(mStatusChecker);
+        mHandler.removeCallbacks(PassiveCheckInRun);
+        mHandler2.removeCallbacks(ActiveCheckInRun);
 
     }
     void sendPassiveCheckIn() {
