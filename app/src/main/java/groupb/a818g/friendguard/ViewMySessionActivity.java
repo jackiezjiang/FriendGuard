@@ -95,6 +95,7 @@ public class ViewMySessionActivity extends AppCompatActivity implements
     private long PassiveCheckinInterval = 1000*60;
     private long ActiveCheckinInterval = 1000*60; //2 min
     private Handler mHandler;
+    private Handler mHandler2;
 
 
     protected void createLocationRequest() {
@@ -258,6 +259,7 @@ public void onClick(View arg0) {
     private void initCheckIns() {
         PassiveCheckinInterval =  GlobalRepository.AutoCheckinIntervalMins*60*1000;
         mHandler = new Handler();
+        mHandler2 = new Handler();
         startRepeatingTask();
 
     }
@@ -540,7 +542,7 @@ public void onClick(View arg0) {
             } finally {
                 // 100% guarantee that this always happens, even if
                 // your update method throws an exception
-                mHandler.postDelayed(ActiveCheckInRun, ActiveCheckinInterval);
+                mHandler2.postDelayed(ActiveCheckInRun, ActiveCheckinInterval);
             }
         }
     };
@@ -551,7 +553,7 @@ public void onClick(View arg0) {
 
     void stopRepeatingTask() {
         mHandler.removeCallbacks(PassiveCheckInRun);
-        mHandler.removeCallbacks(ActiveCheckInRun);
+        mHandler2.removeCallbacks(ActiveCheckInRun);
 
     }
     void sendPassiveCheckIn() {
