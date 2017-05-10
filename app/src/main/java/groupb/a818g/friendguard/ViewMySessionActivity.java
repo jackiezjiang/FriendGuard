@@ -94,6 +94,7 @@ public class ViewMySessionActivity extends AppCompatActivity implements
 
     private long PassiveCheckinInterval = 1000*60;
     private long ActiveCheckinInterval = 1000*60; //2 min
+    private AlertDialog ActiveCheckIndialog=null;
     private Handler mHandler;
     private Handler mHandler2;
 
@@ -264,6 +265,7 @@ public void onClick(View arg0) {
 
     }
     private void ActiveCheckInDialog() {
+        if(ActiveCheckIndialog!=null && ActiveCheckIndialog.isShowing()) return ;
         // 1. Instantiate an AlertDialog.Builder with its constructor
         //AlertDialog.Builder builder = new AlertDialog.Builder(ViewMySessionActivity.this);
         AlertDialog.Builder builder = new AlertDialog.Builder(ViewMySessionActivity.this,  android.R.style.Theme_Material_Dialog_Alert);
@@ -286,7 +288,28 @@ public void onClick(View arg0) {
                 SendAlerts();
             }
         });
-        builder.show();
+        ActiveCheckIndialog = builder.show();
+        ActiveCheckIndialog.show();
+
+        final Handler handler3  = new Handler();
+        final Runnable runnable3 = new Runnable() {
+            @Override
+            public void run() {
+                if (ActiveCheckIndialog.isShowing()) {
+                    ActiveCheckIndialog.dismiss();
+                }
+            }
+        };
+
+        ActiveCheckIndialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
+            @Override
+            public void onDismiss(DialogInterface dialog) {
+                SendAlerts();
+                handler3.removeCallbacks(runnable3);
+            }
+        });
+
+        handler3.postDelayed(runnable3, 1000*60*3); //3min active checkin miss
         //AlertDialog dialog = builder.create();
 
     }
